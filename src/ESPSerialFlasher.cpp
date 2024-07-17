@@ -1,17 +1,20 @@
+
 #include "ESPSerialFlasher.h"
 
 #include "serial_io.h"
 #include "serial_comm.h"
 #include "esp_loader.h"
-
-
+#define RXD2 16
+#define TXD2 17
+#define NINA_GPIO0 4
+#define NINA_RESETN 2
 static int32_t s_time_end;
 
 Print * ESPDebugPort = &Serial;
 bool ESPDebug = false;
 
 void ESPFlasherInit( bool _debug, Print * _debugPort ){
-SerialNina.begin(115200);
+Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 pinMode(NINA_RESETN, OUTPUT);
 pinMode(NINA_GPIO0, OUTPUT);
 ESPDebug = _debug;
@@ -76,7 +79,7 @@ esp_loader_error_t loader_port_serial_write(const uint8_t *data, uint16_t size, 
 {
     
 
-   size_t err = SerialNina.write((const char *)data, size);
+   size_t err = Serial2.write((const char *)data, size);
 
     if (err == size) {
         return ESP_LOADER_SUCCESS;
@@ -88,8 +91,8 @@ esp_loader_error_t loader_port_serial_write(const uint8_t *data, uint16_t size, 
 
 esp_loader_error_t loader_port_serial_read(uint8_t *data, uint16_t size, uint32_t timeout)
 {
-	SerialNina.setTimeout(timeout);
-    int read = SerialNina.readBytes( data, size);
+	Serial2.setTimeout(timeout);
+    int read = Serial2.readBytes( data, size);
 
     if (read < 0) {
         return ESP_LOADER_ERROR_FAIL;
@@ -146,8 +149,8 @@ void loader_port_debug_print(const char *str)
 
 esp_loader_error_t loader_port_change_baudrate(uint32_t baudrate)
 {
-    SerialNina.begin(baudrate);
-    int err = SerialNina;
+    Serial2.begin(baudrate);
+    int err = Serial2;
     return (err == true) ? ESP_LOADER_SUCCESS : ESP_LOADER_ERROR_FAIL;
 }
 
